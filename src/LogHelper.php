@@ -24,6 +24,7 @@ class LogHelper
     protected $config = [
         'file_size'   => 2097152,
         'path'        => '/var/log/',
+        'level'       => ['error'],
     ];
 
     /**
@@ -59,7 +60,7 @@ class LogHelper
      */
     protected function record($type,$log,$format = '')
     {
-        if(!in_array($type,static::$type)) {
+        if(!in_array($type,$this->config['level'])) {
             return true;
         }
         return  $this->save($type,$log,$format);
