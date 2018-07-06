@@ -12,12 +12,12 @@ namespace utils;
 /**
  * Class LogHelper
  * @package utils
- * @method void log($msg,    $format = '') static 记录一般日志
- * @method void error($msg,  $format = '') static 记录错误日志
- * @method void info($msg,   $format = '') static 记录一般信息日志
- * @method void notice($msg, $format = '') static 记录提示日志
- * @method void alert($msg,  $format = '') static 记录报警日志
- * @method void debug($msg,  $format = '') static 记录调试日志
+ * @method void log($msg,    $format = '') 记录一般日志
+ * @method void error($msg,  $format = '') 记录错误日志
+ * @method void info($msg,   $format = '') 记录一般信息日志
+ * @method void notice($msg, $format = '') 记录提示日志
+ * @method void alert($msg,  $format = '') 记录报警日志
+ * @method void debug($msg,  $format = '') 记录调试日志
  */
 class LogHelper
 {
