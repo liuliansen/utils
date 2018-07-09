@@ -19,13 +19,18 @@ namespace utils;
  * @method void alert($msg,  $format = '') 记录报警日志
  * @method void debug($msg,  $format = '') 记录调试日志
  */
-class LogHelper
+class Logger
 {
     protected $config = [
         'file_size'   => 2097152,
         'path'        => '/var/log/',
         'level'       => ['log', 'error', 'info', 'sql', 'notice', 'alert', 'debug'],
     ];
+
+    /**
+     * @var array 日志类型
+     */
+    protected static $type = ['log', 'error', 'info', 'sql', 'notice', 'alert', 'debug'];
 
 
     /**
@@ -118,7 +123,7 @@ class LogHelper
         if(in_array($name,self::$type)) {
             array_unshift($arguments,$name);
         }
-        call_user_func_array(self::class.'::record',$arguments);
+        call_user_func_array([$this,'record'],$arguments);
     }
 
 }
