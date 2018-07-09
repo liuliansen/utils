@@ -24,13 +24,8 @@ class LogHelper
     protected $config = [
         'file_size'   => 2097152,
         'path'        => '/var/log/',
-        'level'       => ['error'],
+        'level'       => ['log', 'error', 'info', 'sql', 'notice', 'alert', 'debug'],
     ];
-
-    /**
-     * @var array 日志类型
-     */
-    protected static $type = ['log', 'error', 'info', 'sql', 'notice', 'alert', 'debug'];
 
 
     /**
