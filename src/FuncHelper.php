@@ -46,5 +46,18 @@ final  class FuncHelper
         return $conf;
     }
 
+    /**
+     * 保持格式打印数组
+     * @param $var
+     * @param bool $exit
+     */
+    static public function print_r($var,$exit = true)
+    {
+        echo '<pre>';
+        print_r($var);
+        echo '</pre>';
+        if($exit) exit;
+    }
+
 
 }
