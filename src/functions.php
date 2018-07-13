@@ -48,12 +48,14 @@ if(!defined('LIANSEN_UTILS')) {
     /**
      * 保持格式打印数组
      * @param $var
+     * @param bool $pre
      * @param bool $exit
      */
     function print_obj($var, $pre=true , $exit = true)
     {
         $out = print_r($var,true);
         echo $pre ? "<pre>{$out}</pre>" : $out;
+        if($exit) exit;
     }
 
     /**
