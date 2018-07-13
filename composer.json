@@ -3,6 +3,7 @@
     "autoload": {
         "psr-4": {
             "utils\\": "src/"
-        }
+        },
+        "files":["src/functions.php"]
     }
 }
