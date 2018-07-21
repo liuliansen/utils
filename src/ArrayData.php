@@ -93,37 +93,15 @@ class ArrayData
      */
     protected function getRoute($route)
     {
-        $routes = [];
-        $last = '';
-        for ($i=0; $i<strlen($route); $i++){
-            $char = $route[$i];
-            if(in_array($char,['{','['])){
-                if($last){
-                    $routes[] = $last;
-                }
-                $last = '';
-                continue;
-            }
-            if(in_array($char,['}',']','.'])){
-                if($last) {
-                    $routes[] = $last;
-                }
-                $last = '';
-                continue;
-            }
-            $last .= $route[$i];
-            if($i == strlen($route) -1) {
-                $routes[] = $last;
-}
-        }
-        return $routes;
+        $routes = preg_split('/[\{\}\[\]\.]/',$route);
+        return array_values(array_filter($routes));
     }
 
 
     /**
-     * 在数组中使用路由表达式查找指定的值<br/>
-     * e.g.
      * <pre>
+     * 在数组中使用路由表达式查找指定的值
+     * e.g.     *
      * $arr = [
      *      'a' => 123,
      *      'b' => [
@@ -158,6 +136,16 @@ class ArrayData
      * $ad = new \utils\ArrayData($arr);
      * $ad->query('a');                                                  // string(3) "123"
      * $ad->query('b.d.e','int',0) );                                    // int(789)
+     * 支持的路由分割符为: '{'、'}'、'['、']'、'.'
+     * 比如
+     *   data.users.name=tom.cards.id=1.card_no
+     *   data.users[name=tom].cards[id=1].card_no
+     *   {data.users[name=tom]}.{cards[id=1]}.card_no
+     * 三条路由获取的结果是一样的。
+     * 选择哪种分隔符取决于个人喜好，个人推荐第二种写法，具有良好的可读性
+     *      通过 '.' 表明前者是一个对象(关联数组)
+     *      通过 'xxx[key=val]'，表明选取xxx字段下具有特定属性值的元素
+     *
      * $ad->query('data.users[name=tom{cards[id=1.card_no]}]');          // string(6) "987654"
      * $ad->query('data.users[name=tom{cards[id=3.card_no]}]','int',0 ); // int(0)
      * </pre>
