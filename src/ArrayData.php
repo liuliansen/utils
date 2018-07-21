@@ -23,7 +23,8 @@ class ArrayData
      * 转化数据类型
      * @param mixed $value
      * @param string $type [string|int|float|bool|json]
-     * @return bool|float|int|string|array
+     * @param $default
+     * @return array|bool|float|int|string
      */
     protected function convert($value,$type = 'string',$default)
     {
@@ -40,8 +41,8 @@ class ArrayData
                 $ret = json_decode($value,true);
                 if(is_null($ret)) $ret = $default;
                 return $ret;
+            default: return $value ?: $default;
         }
-        return $value;
     }
 
     /**
