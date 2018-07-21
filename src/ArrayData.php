@@ -94,7 +94,9 @@ class ArrayData
     protected function getRoute($route)
     {
         $routes = preg_split('/[\{\}\[\]\.]/',$route);
-        return array_values(array_filter($routes));
+        return array_values(array_filter($routes,function($v){
+            return $v !== ''&& $v !== false;
+        }));
     }
 
 
