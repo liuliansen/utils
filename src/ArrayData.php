@@ -29,13 +29,13 @@ class ArrayData
     {
         switch (strtolower($type)){
             case 'string':
-                return strval($value);
+                return strval($value) ?: $default;
             case 'int' :
-                return intval($value);
+                return intval($value)  ?: $default;
             case 'float':
-                return floatval($value);
+                return floatval($value)  ?: $default;
             case 'bool':
-                return boolval($value);
+                return boolval($value)  ?: $default;
             case 'json':
                 $ret = json_decode($value,true);
                 if(is_null($ret)) $ret = $default;
