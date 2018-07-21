@@ -198,5 +198,35 @@ class Date
         $this->date = clone $this->date;
     }
 
+    /**
+     * 检查当前年份是不是闰年
+     * @param string|int $year yyyyy
+     * @return bool
+     */
+    public static function isLeapYear($year)
+    {
+        if($year % 100 == 0){
+            return $year % 400 == 0;
+        }
+        return $year % 4 == 0;
+    }
+
+    /**
+     * 获取指定月份天数
+     * @param $moth
+     * @param string $year
+     * @return int
+     */
+    public static function getDaysOfMonth($moth,$year = '')
+    {
+        if(in_array($moth,[1,3,5,7,8,10,12])){
+            return 31;
+        }
+        if($moth == 2){
+            return Date::isLeapYear($year) ? 29 : 28;
+        }
+        return 30;
+    }
+
 
 }
