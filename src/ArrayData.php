@@ -191,5 +191,52 @@ class ArrayData
     }
 
 
+    /**
+     * <pre>
+     *  获取指定范围段内元素字段数组
+     *  内部实现原理基于array_slice方法先取出所需范围元素
+     *  然后对元素进行所需字段提取或填充
+     * </pre>
+     * @param int $offset 如果 offset 非负，则序列将从 array 中的此偏移量开始。如果 offset 为负，则序列将从 array 中距离末端这么远的地方开始。
+     * @param int $length 如果给出了 length 并且为正，则序列中将具有这么多的单元。如果给出了 length 并且为负，则序列将终止在距离数组末端这么远的地方。如果省略，则序列将从 offset 开始一直到 array 的末端。
+     * @param array $keys 需要提取的键位关联数组;['name' => ''] //键名 => 默认值
+     * @param array $arr  默认使用当前对象$arr内容进行处理
+     * @return array|bool
+     */
+    public function slice($offset ,$length = null,$keys = [],array $arr = [])
+    {
+        if(!is_array($arr)){
+            return false;
+        }
+        if(empty($arr)){
+            $arr = $this->arr;
+        }
+        $_arr = array_slice($arr,$offset,$length);
+        $ret = [];
+        for ($i=0; $i<count($_arr); $i++){
+            $el = $_arr[$i];
+            if(empty($keys)){
+                $ret[] = $el;
+                continue;
+            }
+            $loc = [];
+            foreach ($keys as $k => $def){
+                if(isset($el[$k])){
+                    $loc[$k] = $el[$k];
+                }else{
+                    $loc[$k] = $def;
+                }
+            }
+            $ret[] = $loc;
+        }
+        return $ret;
+
+
+
+
+
+    }
+
+
 
 }
