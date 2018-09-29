@@ -324,7 +324,7 @@ class Validator
         $_rules = [];
         foreach ($this->scenes[$scene] as $k){
             if(isset($this->rules[$k])){
-                $_rules[] = $this->rules[$k];
+                $_rules[$k] = $this->rules[$k];
             }
         }
         return $this->check($data,$_rules);
