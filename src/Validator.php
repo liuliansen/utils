@@ -212,18 +212,28 @@ class Validator
             $rules = $this->formatRule($rules);
             if(is_array($data)){
                 foreach ($data as $k => $item){
-                    $ret = call_user_func_array([$this,$rules[0]],array_merge($rules[1],[$k,$item]));
-                    if(!$ret) {
-                        $this->setError($k, $rules[0],$message);
-                        $checkRet = false;
-                       if($breakFirstError) break;
+                    foreach ($rules as $rule) {
+                        $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], [$k, $item]));
+                        if (!$ret) {
+                            $this->setError($k, $rule[0], $message);
+                            $checkRet = false;
+                            if ($breakFirstError) break;
+                        }
                     }
+                    if($checkRet === false) break;
                 }
             }else{
-                $ret = call_user_func_array([$this,$rules[0]],array_merge($rules[1],['',$data]));
-                if(!$ret){
-                    $checkRet = false;
-                    $this->errStrs[] = $message;
+                foreach ($rules as $rule) {
+                    $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], ['', $data]));
+                    if (!$ret) {
+                        $checkRet = false;
+                        if (is_string($message)) {
+                            $this->errStrs[] = $message;
+                        } else {
+                            $this->setError('', $rule[0], $message);
+                        }
+                        if($breakFirstError) break;
+                    }
                 }
             }
         }
