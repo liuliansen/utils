@@ -101,5 +101,51 @@ class IdCardHelper
         return $num;
     }
 
+    /**
+     * 校验身份证号
+     * @param $val
+     * @return bool
+     */
+    public static function checkIdCardNo($val)
+    {
+        if(!is_string($val)) return false;
+        if(strlen($val) == 15){
+            return !!preg_match('/^\d{6}\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}$/', $val);
+        }else{
+            return static::preg18($val) && static::validateCheckCode($val);
+        }
+    }
+
+
+    /**
+     * @param $id
+     * @return int
+     */
+    protected static function preg18($id)
+    {
+        return preg_match('/^\d{6}(19|20)\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/', $id);
+    }
+
+
+    /**
+     * @param $id
+     * @return bool
+     */
+    protected static function validateCheckCode($id)
+    {
+        $pid = strtoupper($id);
+        $iYear = substr($pid, 6, 4);
+        $iMonth = substr($pid, 10, 2);
+        $iDay = substr($pid, 12, 2);
+        if (checkdate($iMonth, $iDay, $iYear)) {
+            $id17 = substr($pid, 0, 17);  //身份证证号前17位
+            if (static::getIDCardVerifyNumber($id17) != substr($pid, -1)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
 
 }

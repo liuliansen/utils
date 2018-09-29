@@ -189,6 +189,50 @@ class Validator
         return is_array($val);
     }
 
+    /**
+     * in
+     * @param array $values
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function in($values =[],$name,$val){
+        return in_array($val,$values);
+    }
+
+    /**
+     * notIn
+     * @param array $values
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function notIn($values =[],$name,$val){
+        return !in_array($val,$values);
+    }
+
+    /**
+     * 手机号码验证
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function mobile($name,$val)
+    {
+        return !!preg_match('/1[3-9]\d{9}/',$val);
+    }
+
+    /**
+     * 身份证规则
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function idCardNo($name,$val)
+    {
+        return IdCardHelper::checkIdCardNo($val);
+    }
+
 
     /**
      * 检查数据是否符合规则
