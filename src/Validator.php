@@ -327,7 +327,12 @@ class Validator
             $rule =  [$methodSet,[]];
         }else{
             list($method,$argStr) = explode(':',$methodSet);
-            $args = explode(',',$argStr);
+            $argStr = trim($argStr);
+            if(preg_match('/^\[(.*)\]$/',$argStr,$m)){
+                $args = [explode(',', $m[1])];
+            }else {
+                $args = explode(',', $argStr);
+            }
             $rule= [$method,$args];
         }
         return $rule;
