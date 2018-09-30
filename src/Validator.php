@@ -378,6 +378,7 @@ class Validator
     public function scene($scene,$data = null,$breakFirstError = true)
     {
         if(!isset($this->scenes[$scene])){
+            $this->errStrs[] = 'Validator class "'.get_class($this)."\" undefined scene \"{$scene}\"";
             return false;
         }
         is_null($data)  && $data = $this->data;
