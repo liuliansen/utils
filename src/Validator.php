@@ -21,6 +21,12 @@ class Validator
      */
     protected $rules = [];
 
+    /**
+     * 验证时需要的正则
+     * @var array
+     */
+    protected $regexVars = [];
+
     protected $requires = [];
 
     protected $scenes = [];
@@ -55,6 +61,15 @@ class Validator
     public function __construct($data = null)
     {
         $this->data = $data;
+    }
+
+    /**
+     * 添加正则验证表达式
+     * @param $regex
+     */
+    public function addRegex($regex)
+    {
+        $this->regexVars = array_merge($this->regexVars,$regex);
     }
 
 
@@ -244,6 +259,18 @@ class Validator
         return !!json_decode($val);
     }
 
+    /**
+     * 日期格式
+     * @param $regexStr
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function regex($regexStr,$name,$val)
+    {
+        return !!preg_match($regexStr,$val);
+    }
+
 
     /**
      * 检查数据是否符合规则
@@ -255,8 +282,8 @@ class Validator
      */
     public function check($data = null,$rules = null,$message = null,$breakFirstError = true)
     {
-        is_null($data)  && $data = $this->data;
-        is_null($rules) && $rules = $this->rules;
+        is_null($data)    && $data    = $this->data;
+        is_null($rules)   && $rules   = $this->rules;
         is_null($message) && $message = $this->messages;
         if(!$rules || !$data) {
             $this->errStrs[] = 'Unset check rule or data';
@@ -270,7 +297,11 @@ class Validator
                     foreach ($rules as $rule) {
                         $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], [$k, $item]));
                         if (!$ret) {
-                            $this->setError($k, $rule[0], $message);
+                            if (is_string($message)) {
+                                $this->errStrs[] = $message;
+                            } else {
+                                $this->setError($k, $rule[0], $message);
+                            }
                             $checkRet = false;
                             if ($breakFirstError) break;
                         }
@@ -338,11 +369,15 @@ class Validator
             $rule =  [$methodSet,[]];
         }else{
             list($method,$argStr) = explode(':',$methodSet);
-            $argStr = trim($argStr);
-            if(preg_match('/^\[(.*)\]$/',$argStr,$m)){
-                $args = [explode(',', $m[1])];
+            if($method == 'regex'){
+                $args = [$this->regexVars[$argStr]];
             }else {
-                $args = explode(',', $argStr);
+                $argStr = trim($argStr);
+                if (preg_match('/^\[(.*)\]$/', $argStr, $m)) {
+                    $args = [explode(',', $m[1])];
+                } else {
+                    $args = explode(',', $argStr);
+                }
             }
             $rule= [$method,$args];
         }
