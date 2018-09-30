@@ -233,6 +233,17 @@ class Validator
         return IdCardHelper::checkIdCardNo($val);
     }
 
+    /**
+     * json字符串
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function json($name,$val)
+    {
+        return !!json_decode($val);
+    }
+
 
     /**
      * 检查数据是否符合规则
@@ -376,6 +387,6 @@ class Validator
                 $_rules[$k] = $this->rules[$k];
             }
         }
-        return $this->check($data,$_rules);
+        return $this->check($data,$_rules,null,$breakFirstError);
     }
 }
