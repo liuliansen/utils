@@ -19,7 +19,7 @@ class Validator
      * ]
      * @var array
      */
-    protected $rules = [];
+    protected $rules = null;
 
     /**
      * 验证时需要的正则
@@ -157,7 +157,7 @@ class Validator
      */
     protected function length($min,$max,$name,$val)
     {
-        $len = is_string($val)? strlen($val):count($val);
+        $len = is_string($val)? mb_strlen($val):count($val);
         return $len <= $max && $len >= $min;
     }
 
@@ -234,7 +234,7 @@ class Validator
      */
     protected function mobile($name,$val)
     {
-        return !!preg_match('/1[3-9]\d{9}/',$val);
+        return $this->regex('/1[3-9]\d{9}/',$name,$val);
     }
 
     /**
@@ -268,8 +268,159 @@ class Validator
      */
     protected function regex($regexStr,$name,$val)
     {
-        return !!preg_match($regexStr,$val);
+        return is_scalar($val) && 1 === preg_match($regexStr,$val);
     }
+
+    /**
+     * 整数
+     * @param $name
+     * @param $value
+     * @return mixed
+     */
+    protected function int($name,$value)
+    {
+        return false !== filter_var($value,FILTER_VALIDATE_INT);
+    }
+
+    /**
+     * 比较值
+     * @param $type
+     * @param $value
+     * @param $val
+     * @param $data
+     * @return bool
+     * @throws \Exception
+     */
+    protected function compare($type, $value, $val, $data)
+    {
+        if(mb_substr($value,0,2) == '$.'){
+            $key = mb_substr($value,2);
+            if(!isset($data[$key])){
+                return false;
+            }
+            $value = $data[$key];
+        }
+        switch ($type){
+            case 'eq':
+                return $val == $value;
+            case 'lt':
+                return $val < $value;
+            case 'lte':
+                return $val <= $value;
+            case 'gt':
+                return $val > $value;
+            case 'gte':
+                return $val >= $value;
+        }
+        throw new \Exception("unsupport compare type {$type}");
+    }
+
+    /**
+     * 等于
+     * @param $value
+     * @param $name
+     * @param $val
+     * @param $data
+     * @return bool
+     */
+    protected function eq($value,$name,$val,$data)
+    {
+        return $this->compare('eq',$value,$val,$data);
+    }
+
+
+    /**
+     * 等于
+     * @param $value
+     * @param $name
+     * @param $val
+     * @param $data
+     * @return bool
+     */
+    protected function gt($value,$name,$val,$data)
+    {
+        return $this->compare('gt',$value,$val,$data);
+
+    }
+
+    /**
+     * 等于
+     * @param $value
+     * @param $name
+     * @param $val
+     * @param $data
+     * @return bool
+     */
+    protected function lt($value,$name,$val,$data)
+    {
+        return $this->compare('lt',$value,$val,$data);
+    }
+
+
+    /**
+     * 大于等于
+     * @param $value
+     * @param $name
+     * @param $val
+     * @param $data
+     * @return bool
+     */
+    protected function gte($value,$name,$val,$data)
+    {
+        return $this->compare('gte',$value,$val,$data);
+    }
+
+    /**
+     * 小于等于
+     * @param $value
+     * @param $name
+     * @param $val
+     * @param $data
+     * @return bool
+     */
+    protected function lte($value,$name,$val,$data)
+    {
+        return $this->compare('lte',$value,$val,$data);
+    }
+
+    /**
+     * empty
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function emptyVal($name,$val)
+    {
+        return empty($val);
+    }
+
+    /**
+     * 中文
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function chs($name,$val)
+    {
+        return $this->regex('/^[\x{4e00}-\x{9fa5}]+$/u',$name,$val);
+    }
+
+    /**
+     * 中文
+     * @param $value
+     * @param $name
+     * @param $val
+     * @return bool
+     */
+    protected function chsOrIn($value,$name,$val)
+    {
+        if(in_array($val,$value)){
+            return true;
+        }
+        return $this->regex('/^[\x{4e00}-\x{9fa5}]+$/u',$name,$val);
+    }
+
+
 
 
     /**
@@ -285,7 +436,7 @@ class Validator
         is_null($data)    && $data    = $this->data;
         is_null($rules)   && $rules   = $this->rules;
         is_null($message) && $message = $this->messages;
-        if(!$rules || !$data) {
+        if(is_null($rules) || is_null($data)) {
             $this->errStrs[] = 'Unset check rule or data';
             return false;
         }
@@ -295,30 +446,38 @@ class Validator
             if(is_array($data)){
                 foreach ($data as $k => $item){
                     foreach ($rules as $rule) {
-                        $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], [$k, $item]));
-                        if (!$ret) {
-                            if (is_string($message)) {
-                                $this->errStrs[] = $message;
-                            } else {
-                                $this->setError($k, $rule[0], $message);
+                        $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], [$k, $item,$data]));
+                        if($rule[0] == 'emptyVal'){
+                            if($ret) break;
+                        }else {
+                            if (!$ret) {
+                                if (is_string($message)) {
+                                    $this->errStrs[] = $message;
+                                } else {
+                                    $this->setError($k, $rule[0], $message);
+                                }
+                                $checkRet = false;
+                                if ($breakFirstError) break;
                             }
-                            $checkRet = false;
-                            if ($breakFirstError) break;
                         }
                     }
                     if($checkRet === false) break;
                 }
             }else{
                 foreach ($rules as $rule) {
-                    $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], ['', $data]));
-                    if (!$ret) {
-                        $checkRet = false;
-                        if (is_string($message)) {
-                            $this->errStrs[] = $message;
-                        } else {
-                            $this->setError('', $rule[0], $message);
+                    $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], ['', $data,[]]));
+                    if($rule[0] == 'emptyVal'){
+                        if($ret) break;
+                    }else {
+                        if (!$ret) {
+                            $checkRet = false;
+                            if (is_string($message)) {
+                                $this->errStrs[] = $message;
+                            } else {
+                                $this->setError('', $rule[0], $message);
+                            }
+                            if ($breakFirstError) break;
                         }
-                        if($breakFirstError) break;
                     }
                 }
             }
@@ -336,7 +495,13 @@ class Validator
                             $checkRet = false;
                             if($breakFirstError) break;
                         }
-                    }else{
+                    }
+                    elseif($rule[0] == 'emptyVal'){
+                        if(!isset($data[$name]) || $this->emptyVal($name,$data[$name])){
+                            break;
+                        }
+                    }
+                    else{
                         if(isset($data[$name])) {
                             $val = $data[$name];
                             $ret = call_user_func_array([$this, $rule[0]], array_merge($rule[1], [$name, $val,$data]));
@@ -366,12 +531,14 @@ class Validator
     {
         $rule = null;
         if(strpos($methodSet,':') === false){
+            if($methodSet == 'empty') $methodSet = 'emptyVal';
             $rule =  [$methodSet,[]];
         }else{
             list($method,$argStr) = explode(':',$methodSet);
             if($method == 'regex'){
                 $args = [$this->regexVars[$argStr]];
             }else {
+                if($method == 'empty') $method = 'emptyVal';
                 $argStr = trim($argStr);
                 if (preg_match('/^\[(.*)\]$/', $argStr, $m)) {
                     $args = [explode(',', $m[1])];
